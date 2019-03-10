@@ -13,8 +13,8 @@ from hyperparameters import Hyperparameters
 
 
 def main():
-    french = get_lines("data/french-toy.txt")
-    english = get_lines("data/english-toy.txt")
+    french = get_lines("data/french.txt")
+    english = get_lines("data/english.txt")
 
     french_english_pairs = list(zip(french, english))
 
@@ -35,7 +35,7 @@ def main():
         erv = pickle.load(f)
 
     t_loss, t_accuracy = train(training_input_sentences, training_output_sentences, fv, ev, frv, erv, hyperparameters, writer)
-    print("Training Accuracy = {:.1f} +/ {:.1f}".format(100. * np.mean(t_accuracy), 100. * np.std(t_accuracy)))
+    print("Training Accuracy = {:.1f}".format(100. * np.mean(t_accuracy)))
 
     evaluate(validation_input_sentences, validation_output_sentences, fv, ev, frv, erv, hyperparameters, writer)
 

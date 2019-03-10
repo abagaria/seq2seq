@@ -1,0 +1,21 @@
+In your README, please note down:
+
+- A brief description talking about your rationale behind the 
+  hyperparameters used,
+- Your perplexity and accuracy scores for both the BPE-preprocessed 
+  dataset, and the standard dataset,
+- A discussion on the advantages and disadvantages of using byte-pair 
+  encoding over traditional methods.
+
+If you have tried experimenting with hyperparameters, please note down:
+
+- What hyperparameter experiments you have tried,
+- For each experiment, what the results were,
+- A brief discussion comparing and contrasting the results between the
+  experiments, and why the results were the way they were.
+
+Even if you were not able to achieve good results with any of the models
+developed, if you provide a substantial report describing multiple experiments,
+rationale behind why the experiments were attempted and why they did/didn't
+work, and discussion on why some worked better than others, etc. you will be
+able to receive substantial partial credit.

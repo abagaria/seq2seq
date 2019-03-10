@@ -1,6 +1,7 @@
 # Python imports.
 from tqdm import tqdm
 import numpy as np
+import pdb
 
 # PyTorch imports.
 import torch
@@ -8,6 +9,7 @@ from torch.utils.data import DataLoader
 
 # Other imports.
 from dataset import NMTDataset
+from dataset import collate_fn
 from hyperparameters import *
 from encoder import EncoderRNN
 from decoder import DecoderRNN
@@ -15,21 +17,21 @@ from decoder import DecoderRNN
 
 def evaluate(input_sentences, output_sentences, input_vocab, output_vocab, input_reverse, output_reverse, hy, writer):
     dataset = NMTDataset(input_sentences, output_sentences, input_vocab, output_vocab, input_reverse, output_reverse)
-    loader = DataLoader(dataset, batch_size=hy.batch_size, shuffle=True, drop_last=True)
+    loader = DataLoader(dataset, batch_size=1, shuffle=True, drop_last=True, collate_fn=collate_fn)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     input_vocab_size = len(input_vocab.keys())
     output_vocab_size = len(output_vocab.keys())
 
-    encoder = EncoderRNN(input_vocab_size, hy.embedding_size, hy.hidden_size, hy.rnn_layers, hy.bidirectional, device)
-    decoder = DecoderRNN(output_vocab_size, hy.embedding_size, hy.hidden_size, hy.rnn_layers, hy.bidirectional, device)
+    encoder = EncoderRNN(input_vocab_size, hy.embedding_size, hy.hidden_size, hy.rnn_layers, hy.bidirectional, device, dataset)
+    decoder = DecoderRNN(output_vocab_size, hy.embedding_size, hy.hidden_size, hy.rnn_layers, hy.bidirectional, device, dataset)
 
     accuracies = []
 
     for epoch in range(1, hy.num_epochs + 1):
-        encoder.load_state_dict(torch.load("saved_runs/encoder_{}_weights.pt".format(epoch)))
-        decoder.load_state_dict(torch.load("saved_runs/decoder_{}_weights.pt".format(epoch)))
+        encoder.load_state_dict(torch.load("saved_runs_batched/encoder_{}_weights.pt".format(epoch)))
+        decoder.load_state_dict(torch.load("saved_runs_batched/decoder_{}_weights.pt".format(epoch)))
         accuracy = compute_model_accuracy(encoder, decoder, loader, device, epoch, writer)
         accuracies.append(accuracy)
 
@@ -49,18 +51,23 @@ def compute_model_accuracy(encoder, decoder, loader, device, epoch, writer):
 
     print("\rComputing validation accuracy model @ {} epoch..".format(epoch))
 
-    for encoder_input, decoder_input, decoder_output in tqdm(loader):
+    for encoder_input, encoder_len, decoder_input, decoder_input_len, decoder_output, decoder_output_len in loader:
+        # Move the data to the GPU
         encoder_input = encoder_input.to(device)
         decoder_input = decoder_input.to(device)
         decoder_output = decoder_output.to(device)
+        encoder_len = encoder_len.to(device)
+        decoder_input_len = decoder_input_len.to(device)
 
         with torch.no_grad():
-            _, encoder_hidden = encoder(encoder_input)
-            logits = decoder(decoder_input, encoder_hidden)
+            encoder_hidden = encoder(encoder_input, encoder_len)
+            logits = decoder(decoder_input, decoder_input_len, encoder_hidden)
             predicted_sequence = logits.argmax(dim=-1)
 
         num_correct += (predicted_sequence == decoder_output).sum().item()
         num_total += decoder_output.shape[1]
     accuracy = (1. * num_correct) / float(num_total)
+
     writer.add_scalar("validation_accuracy", accuracy, epoch)
+
     return accuracy

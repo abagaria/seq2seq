@@ -5,12 +5,15 @@ def get_lines(input_file):
     with open(input_file, "r") as _file:
         lines = []
         for line in _file:
+            line = line.replace("\n", "")
             lines.append(line)
-        random.shuffle(lines)
-        return lines
+    return lines
 
 
 def create_data_splits(input_output_pairs):
+
+    random.shuffle(input_output_pairs)
+
     num_lines = len(input_output_pairs)
     num_training_lines = int(0.9 * num_lines)
 

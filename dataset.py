@@ -37,18 +37,6 @@ class NMTDataset(Dataset):
         self.input_tensors = self.read_input_sentences(french_sentences)
         self.output_tensors = self.read_output_sentences(english_sentences)
 
-        # self.padded_input_tensors = self.pad_sentences(self.input_tensors)
-        # self.padded_output_tensors = self.pad_sentences(self.output_tensors)
-
-    @staticmethod
-    def pad_sentences(sentence_tensors):
-        max_length = max(map(len, sentence_tensors))
-        padded_tensor = torch.zeros(len(sentence_tensors), max_length, dtype=torch.long)
-        for i, sentence_tensor in enumerate(sentence_tensors):
-            seq_length = sentence_tensor.shape[1]
-            padded_tensor[i, :seq_length] = sentence_tensor
-        return padded_tensor
-
     def read_input_sentences(self, sentences):
         sentence_tensors = []
         for sentence in sentences:
@@ -119,6 +107,44 @@ def extract_sentences(_file):
         for line in _f:
             sentences.append(line)
     return sentences
+
+
+def collate_fn(data):
+    """
+    We should build a custom collate_fn rather than using default collate_fn,
+    because merging sequences (including padding) is not supported in default.
+    Sequences are padded to the maximum length of mini-batch sequences (dynamic padding).
+
+    Args:
+        data (list): of tuples of the form <encoder_input, decoder_input, decoder_output>
+
+    Returns:
+        input_sequences (torch.tensor)
+        input_lengths (list)
+        output_sequences (torch.tensor)
+        output_lengths (list)
+    """
+    def merge(sequences):
+        lengths = list(map(len, sequences))
+        padded_seqs = torch.zeros(len(sequences), max(lengths)).long()
+        for i, seq in enumerate(sequences):
+            end = lengths[i]
+            padded_seqs[i, :end] = seq[:end]
+        return padded_seqs, torch.tensor(lengths).long()
+
+    # sort a list by sequence length (descending order) to use pack_padded_sequence
+    data.sort(key=lambda x: len(x[0]), reverse=True)
+
+    # separate source and target sequences
+    encoder_inputs, decoder_inputs, decoder_outputs = zip(*data)
+
+    # merge sequences (from tuple of 1D tensor to 2D tensor)
+    padded_encoder_inputs, encoder_input_lengths = merge(encoder_inputs)
+    padded_decoder_inputs, decoder_input_lengths = merge(decoder_inputs)
+    padded_decoder_outputs, decoder_output_lengths = merge(decoder_outputs)
+
+    return padded_encoder_inputs, encoder_input_lengths, padded_decoder_inputs, decoder_input_lengths,\
+        padded_decoder_outputs, decoder_output_lengths
 
 
 if __name__ == "__main__":

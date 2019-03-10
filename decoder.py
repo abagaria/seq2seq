@@ -4,12 +4,13 @@ import pdb
 # PyTorch imports.
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
 class DecoderRNN(nn.Module):
     """ Decoder network. """
 
-    def __init__(self, output_vocab_size, embedding_size, hidden_size, rnn_layers, bidirectional, device):
+    def __init__(self, output_vocab_size, embedding_size, hidden_size, rnn_layers, bidirectional, device, dataset):
         super(DecoderRNN, self).__init__()
         self.output_vocab_size = output_vocab_size
         self.hidden_size = hidden_size
@@ -17,6 +18,7 @@ class DecoderRNN(nn.Module):
         self.rnn_layers = rnn_layers
         self.bidirectional = bidirectional
         self.device = device
+        self.dataset = dataset  # TODO
 
         self.embedding = nn.Embedding(output_vocab_size, embedding_size)
         self.rnn_decoder = nn.GRU(embedding_size, hidden_size, num_layers=rnn_layers,
@@ -25,8 +27,19 @@ class DecoderRNN(nn.Module):
 
         self.to(device)
 
-    def forward(self, tokens, encoder_hidden):
+    def forward(self, tokens, seq_lens, encoder_hidden):
         embeds = self.embedding(tokens)
-        output, hidden = self.rnn_decoder(embeds, encoder_hidden)
+
+        sorted_seq_lens, perm_idx = seq_lens.sort(0, descending=True)
+        sorted_seq_tensor = embeds[perm_idx]
+
+        packed_input = pack_padded_sequence(sorted_seq_tensor, sorted_seq_lens, batch_first=True)
+        packed_output, _ = self.rnn_decoder(packed_input, encoder_hidden)
+        output, output_lens = pad_packed_sequence(packed_output, batch_first=True)
+
         logits = self.classifier(output)
-        return logits
+
+        _, unsorted_idx = perm_idx.sort(0)
+        unsorted_logits = logits[unsorted_idx].squeeze(1)
+
+        return unsorted_logits

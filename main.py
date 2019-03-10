@@ -13,8 +13,8 @@ from hyperparameters import Hyperparameters
 
 
 def main():
-    french = get_lines("data/french-toy.txt")
-    english = get_lines("data/english-toy.txt")
+    french = get_lines("data/french.txt")
+    english = get_lines("data/english.txt")
 
     french_english_pairs = list(zip(french, english))
 
@@ -47,9 +47,9 @@ if __name__ == '__main__':
     parser.add_argument("--epochs", type=int, help="number of training epochs", default=10)
     parser.add_argument("--embedding_size", type=int, help="embedding size", default=500)
     parser.add_argument("--hidden_size", type=int, help="RNN size", default=512)
-    parser.add_argument("--lr", type=float, help="Learning rate", default=1e-3)
+    parser.add_argument("--lr", type=float, help="Learning rate", default=1e-4)
     parser.add_argument("--bidirectional", type=bool, help="Bidirectional RNN", default=False)
-    parser.add_argument("--num_rnn_layers", type=int, help="# RNN Layers", default=2)
+    parser.add_argument("--num_rnn_layers", type=int, help="# RNN Layers", default=1)
     args = parser.parse_args()
 
     writer = SummaryWriter(args.experiment_name)

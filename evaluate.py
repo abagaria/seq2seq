@@ -71,6 +71,7 @@ def compute_model_accuracy(encoder, decoder, loader, device, epoch, writer):
 
             if i % 5 == 0:
                 print()
+                print("{}. Input: {}".format(i, encoder.dataset.decode_french_line(encoder_input[i, :])))
                 print("{}. Prediction: {}".format(i, decoder.dataset.decode_english_line(predictions)))
                 print("{}. Label: {}".format(i, decoder.dataset.decode_english_line(ground_truth)))
                 print()

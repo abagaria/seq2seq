@@ -94,8 +94,14 @@ def compute_model_accuracy(encoder, decoder, loader, device, epoch, writer):
             logits = decoder(decoder_input, decoder_input_len, encoder_hidden)
             predicted_sequence = logits.argmax(dim=-1)
 
-        num_correct += (predicted_sequence == decoder_output).sum().item()
-        num_total += decoder_output.shape[1]
+        for i in range(encoder_input.shape[0]):
+            output_length = decoder_output_len[i]
+            predictions = predicted_sequence[i, :output_length]
+            ground_truth = decoder_output[i, :output_length]
+
+            num_correct += (predictions == ground_truth).sum().item()
+            num_total += output_length
+
     accuracy = (1. * num_correct) / float(num_total)
     writer.add_scalar("training_accuracy", accuracy, epoch)
 

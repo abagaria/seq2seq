@@ -17,7 +17,7 @@ from decoder import DecoderRNN
 
 def evaluate(input_sentences, output_sentences, input_vocab, output_vocab, input_reverse, output_reverse, hy, writer):
     dataset = NMTDataset(input_sentences, output_sentences, input_vocab, output_vocab, input_reverse, output_reverse)
-    loader = DataLoader(dataset, batch_size=1, shuffle=True, drop_last=True, collate_fn=collate_fn)
+    loader = DataLoader(dataset, batch_size=hy.batch_size, shuffle=True, drop_last=True, collate_fn=collate_fn)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -64,8 +64,20 @@ def compute_model_accuracy(encoder, decoder, loader, device, epoch, writer):
             logits = decoder(decoder_input, decoder_input_len, encoder_hidden)
             predicted_sequence = logits.argmax(dim=-1)
 
-        num_correct += (predicted_sequence == decoder_output).sum().item()
-        num_total += decoder_output.shape[1]
+        for i in range(encoder_input.shape[0]):
+            output_length = decoder_output_len[i]
+            predictions = predicted_sequence[i, :output_length]
+            ground_truth = decoder_output[i, :output_length]
+
+            if i % 5 == 0:
+                print()
+                print("{}. Prediction: {}".format(i, decoder.dataset.decode_english_line(predictions)))
+                print("{}. Label: {}".format(i, decoder.dataset.decode_english_line(ground_truth)))
+                print()
+
+            num_correct += (predictions == ground_truth).sum().item()
+            num_total += output_length
+
     accuracy = (1. * num_correct) / float(num_total)
 
     writer.add_scalar("validation_accuracy", accuracy, epoch)

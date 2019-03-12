@@ -59,7 +59,7 @@ def train(input_sentences, output_sentences, vocab, reverse_vocab, hy, writer):
             loss_history.append(loss.item())
 
         training_accuracy = compute_model_accuracy(model, loader, device, epoch, writer)
-        torch.save(model.state_dict(), "saved_runs_batched/seq2seq_{}_weights.pt".format(epoch))
+        torch.save(model.state_dict(), "saved_runs/seq2seq_{}_weights.pt".format(epoch))
 
     return loss_history, training_accuracy
 

@@ -1,37 +1,59 @@
-import sys
+# Python imports.
+import pickle
+import argparse
+import numpy as np
+import pdb
 
-eng_filename = sys.argv[1]
-frn_filename = sys.argv[2]
-
-
-# TODO: Preprocess the dataset:
-# - Shuffle the dataset
-# - Split the dataset into 90-10
-# - Tokenize the words into IDs
-# - Pad sentences, and store sentence lengths
-# - Create three outputs: Encoder input, decoder input, decoder output
-# - Example encoder input: [hansard, revise, numero, 1, STOP]
-# - Example decoder input: [START, edited, hansard, number, 1]
-# - Example decoder output: [edited, hansard, number, 1, STOP]
+# Other imports.
+from utils import create_data_splits, get_lines
+from train import train
+from evaluate import evaluate
+from tensorboardX import SummaryWriter
+from hyperparameters import Hyperparameters
+from vocab import Vocab
 
 
-# TODO: Create the sequence-to-sequence model. This should contain:
-# - Embedding layers, one for french sentences and one for english sentences
-# - An encoder network, taking in the french embeddings as input
-# - A decoder network, taking in the english embeddings and encoded
-#   french sentence as input
-# - A loss function, comparing the decoder output with the expected decoder
-#   output. (NOTE: make sure to mask the padded STOPs when computing the loss.)
-# - A backpropagation function to minimize the loss
-# - A function to calculate perplexity of the output
-# - A function to calculate the accuracy of the output. The accuracy is
-#   defined as the percentage of correct symbols.
+def main():
+    french = get_lines(args.french_filename)
+    english = get_lines(args.english_filename)
 
-# NOTE: In this file, you want to implement the seq2seq model for the
-# BPE dataset. The model will be largely identical to the
-# seq2seq model for the vanilla-dataset, except that there is only one
-# word embedding for both the encoder (french) and decoder (english).
-# This is due to the fact that the encoding is a joint-BPE.
+    french_english_pairs = list(zip(french, english))
 
-# TODO: Train the model, then evaluate using the validation set.
-# At the end, print out the final perplexity and accuracy score.
+    training_pairs, validation_pairs = create_data_splits(french_english_pairs)
+
+    training_input_sentences = [pair[0] for pair in training_pairs]
+    training_output_sentences = [pair[1] for pair in training_pairs]
+    validation_input_sentences = [pair[0] for pair in validation_pairs]
+    validation_output_sentences = [pair[1] for pair in validation_pairs]
+
+    Vocab(args.english_filename, args.french_filename)
+
+    with open("data/bpe_vocab.pkl", "rb") as f:
+        v = pickle.load(f)
+    with open("data/bpe_reverse_vocab.pkl", "rb") as f:
+        rv = pickle.load(f)
+
+    t_loss, t_accuracy = train(training_input_sentences, training_output_sentences, v, rv, hyperparameters, writer)
+    print("Training Accuracy = {:.1f}".format(100. * np.mean(t_accuracy)))
+
+    evaluate(validation_input_sentences, validation_output_sentences, v, rv, hyperparameters, writer)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--french_filename", type=str, help="Path to french corpus")
+    parser.add_argument("--english_filename", type=str, help="Path to english corpus")
+    parser.add_argument("--experiment_name", type=str, help="Name of experiment", default="")
+    parser.add_argument("--batch_size", type=int, help="batch size", default=32)
+    parser.add_argument("--epochs", type=int, help="number of training epochs", default=1)
+    parser.add_argument("--embedding_size", type=int, help="embedding size", default=512)
+    parser.add_argument("--hidden_size", type=int, help="RNN size", default=256)
+    parser.add_argument("--lr", type=float, help="Learning rate", default=2e-3)
+    parser.add_argument("--bidirectional", type=bool, help="Bidirectional RNN", default=True)
+    parser.add_argument("--num_rnn_layers", type=int, help="# RNN Layers", default=1)
+    args = parser.parse_args()
+
+    writer = SummaryWriter(args.experiment_name)
+    hyperparameters = Hyperparameters(args)
+
+    main()

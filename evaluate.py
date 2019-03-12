@@ -25,7 +25,7 @@ def evaluate(input_sentences, output_sentences, vocab, reverse_vocab, hy, writer
     accuracies = []
 
     for epoch in range(1, hy.num_epochs + 1):
-        model.load_state_dict(torch.load("saved_runs_batched/seq2seq_{}_weights.pt".format(epoch)))
+        model.load_state_dict(torch.load("saved_runs/seq2seq_{}_weights.pt".format(epoch)))
         accuracy = compute_model_accuracy(model, loader, device, epoch, writer)
         accuracies.append(accuracy)
 

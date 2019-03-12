@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# project 3
+# open-vocab
+
+eng_filename=$1
+frn_filename=$2
+stdout_file=$3
+
+#
+#   We will be running this script to grade your assignment. Note that failure
+# to run this program with this script will result in a 15% deduction in your
+# grade, regardless of if you provide other instructions on how to run your
+# program.
+#
+#   If you are having difficulty getting the script to run your program, talk
+# to the TAs.
+##############################################################################
+
+python seq2seq_vanilla.py $eng_filename $frn_filename | tee $stdout_file
+
+##############################################################################
+# Run this script with the command
+#
+#   ./seq2seq_vanilla eng_bpe.txt frn_bpe.txt out.txt

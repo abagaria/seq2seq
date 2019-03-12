@@ -17,7 +17,8 @@ stdout_file=$3
 # to the TAs.
 ##############################################################################
 
-python seq2seq_vanilla.py $eng_filename $frn_filename | tee $stdout_file
+python main.py --version="vanilla" --english_file=$eng_filename --french_file=$frn_filename --epochs=2 --batch_size=32 --num_rnn_layers=2 --bidirectional=True --hidden_size=256 --embedding_size=512 --lr=2e-3 | tee $stdout_file
+# python seq2seq_vanilla.py $eng_filename $frn_filename | tee $stdout_file
 
 ##############################################################################
 # Run this script with the command

@@ -10,32 +10,25 @@ from torch.utils.data import Dataset
 class NMTDataset(Dataset):
     """ Dataset module for Neural Machine Translation . """
 
-    def __init__(self, french_sentences, english_sentences, french_vocab, english_vocab,
-                 french_reverse_vocab, english_reverse_vocab):
+    def __init__(self, french_sentences, english_sentences, vocab, reverse_vocab):
         """
         The task is to translate French sentences into English.
         Args:
             french_sentences (list)
             english_sentences (list)
-            french_vocab (defaultdict)
-            english_vocab (defaultdict)
-            french_reverse_vocab (defaultdict)
-            english_reverse_vocab (defaultdict)
+            vocab (defaultdict)
+            reverse_vocab (defaultdict)
         """
         self.input_sentences = french_sentences
         self.output_sentences = english_sentences
 
-        self.input_vocab = french_vocab
-        self.output_vocab = english_vocab
+        self.vocab = vocab
+        self.reverse_vocab = reverse_vocab
 
-        self.input_reverse_vocab = french_reverse_vocab
-        self.output_reverse_vocab = english_reverse_vocab
-
-        self.input_unk_token = french_vocab["UNK"]
-        self.output_unk_token = english_vocab["UNK"]
+        self.input_unk_token = vocab["UNK"] if "UNK" in vocab else len(vocab) + 100
 
         self.input_tensors = self.read_input_sentences(french_sentences)
-        self.output_tensors = self.read_output_sentences(english_sentences)
+        self.output_tensors = self.read_input_sentences(english_sentences)
 
     def read_input_sentences(self, sentences):
         sentence_tensors = []
@@ -45,30 +38,19 @@ class NMTDataset(Dataset):
 
     def read_input_sentence(self, sentence):
         sequence = sentence.split()
-        word_ids = [self.input_vocab[word] if word in self.input_vocab else self.input_unk_token for word in sequence]
-        return torch.tensor(word_ids, dtype=torch.long)
-
-    def read_output_sentences(self, sentences):
-        sentence_tensors = []
-        for sentence in sentences:
-            sentence_tensors.append(self.read_output_sentence(sentence))
-        return sentence_tensors
-
-    def read_output_sentence(self, sentence):
-        sequence = sentence.split()
-        word_ids = [self.output_vocab[word] if word in self.output_vocab else self.output_unk_token for word in sequence]
+        word_ids = [self.vocab[word] if word in self.vocab else self.input_unk_token for word in sequence]
         return torch.tensor(word_ids, dtype=torch.long)
 
     def decode_english_line(self, word_ids):
         english_sentence = []
         for word_id in word_ids.tolist():
-            english_sentence.append(self.output_reverse_vocab[word_id])
+            english_sentence.append(self.reverse_vocab[word_id])
         return english_sentence
 
     def decode_french_line(self, word_ids):
         french_sentence = []
         for word_id in word_ids.tolist():
-            french_sentence.append(self.input_reverse_vocab[word_id])
+            french_sentence.append(self.reverse_vocab[word_id])
         return french_sentence
 
     def __len__(self):
@@ -86,17 +68,17 @@ class NMTDataset(Dataset):
         # Add a <STOP> token to the end of the encoder input
         encoder_input = torch.ones(original_input_length + 1, dtype=torch.long)
         encoder_input[:original_input_length] = input_tensor
-        encoder_input[original_input_length] = self.input_vocab["<EOS>"]
+        encoder_input[original_input_length] = self.vocab["<EOS>"]
 
         # Add a <START> at the beginning of the decoder input
         decoder_input = torch.ones(original_output_length + 1, dtype=torch.long)
-        decoder_input[0] = self.output_vocab["<SOS>"]
+        decoder_input[0] = self.vocab["<SOS>"]
         decoder_input[1:] = output_tensor
 
         # Add a <STOP> token at the end of the decoder output
         decoder_output = torch.ones(original_output_length + 1, dtype=torch.long)
         decoder_output[:original_output_length] = output_tensor
-        decoder_output[original_output_length] = self.output_vocab["<EOS>"]
+        decoder_output[original_output_length] = self.vocab["<EOS>"]
 
         return encoder_input, decoder_input, decoder_output
 

@@ -20,18 +20,15 @@ class DecoderRNN(nn.Module):
         self.device = device
         self.dataset = dataset  # TODO
 
-        self.embedding = nn.Embedding(output_vocab_size, embedding_size)
         self.rnn_decoder = nn.GRU(embedding_size, hidden_size, num_layers=rnn_layers,
                                   bidirectional=bidirectional, batch_first=True)
         self.classifier = nn.Linear(2 * hidden_size if bidirectional else hidden_size, output_vocab_size)
 
         self.to(device)
 
-    def forward(self, tokens, seq_lens, encoder_hidden):
-        embeds = self.embedding(tokens)
-
+    def forward(self, embedded_tokens, seq_lens, encoder_hidden):
         sorted_seq_lens, perm_idx = seq_lens.sort(0, descending=True)
-        sorted_seq_tensor = embeds[perm_idx]
+        sorted_seq_tensor = embedded_tokens[perm_idx]
 
         packed_input = pack_padded_sequence(sorted_seq_tensor, sorted_seq_lens, batch_first=True)
         packed_output, _ = self.rnn_decoder(packed_input, encoder_hidden)

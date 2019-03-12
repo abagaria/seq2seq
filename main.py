@@ -13,8 +13,8 @@ from hyperparameters import Hyperparameters
 
 
 def main():
-    french = get_lines("data/french.txt")
-    english = get_lines("data/english.txt")
+    french = get_lines("data/french-bpe.txt")
+    english = get_lines("data/english-bpe.txt")
 
     french_english_pairs = list(zip(french, english))
 
@@ -25,19 +25,15 @@ def main():
     validation_input_sentences = [pair[0] for pair in validation_pairs]
     validation_output_sentences = [pair[1] for pair in validation_pairs]
 
-    with open("data/french_vocab.pkl", "rb") as f:
-        fv = pickle.load(f)
-    with open("data/french_reverse_vocab.pkl", "rb") as f:
-        frv = pickle.load(f)
-    with open("data/english_vocab.pkl", "rb") as f:
-        ev = pickle.load(f)
-    with open("data/english_reverse_vocab.pkl", "rb") as f:
-        erv = pickle.load(f)
+    with open("data/bpe_vocab.pkl", "rb") as f:
+        v = pickle.load(f)
+    with open("data/bpe_reverse_vocab.pkl", "rb") as f:
+        rv = pickle.load(f)
 
-    t_loss, t_accuracy = train(training_input_sentences, training_output_sentences, fv, ev, frv, erv, hyperparameters, writer)
+    t_loss, t_accuracy = train(training_input_sentences, training_output_sentences, v, rv, hyperparameters, writer)
     print("Training Accuracy = {:.1f} +/ {:.1f}".format(100. * np.mean(t_accuracy), 100. * np.std(t_accuracy)))
 
-    evaluate(validation_input_sentences, validation_output_sentences, fv, ev, frv, erv, hyperparameters, writer)
+    evaluate(validation_input_sentences, validation_output_sentences, v, rv, hyperparameters, writer)
 
 
 if __name__ == '__main__':

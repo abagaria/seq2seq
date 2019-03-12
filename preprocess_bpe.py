@@ -62,6 +62,14 @@ def save_words(eng_lines, frn_lines, eng_filename, frn_filename):
             frn_file.write(' '.join(line) + '\n')
 
 
+def create_joint_file(new_english_lines, new_french_lines):
+    with open("bpe-joint.txt", "w") as f:
+        for line in new_english_lines:
+            f.write(' '.join(line) + '\n')
+        for line in new_french_lines:
+            f.write(' '.join(line) + '\n')
+
+
 # TODO: Implement byte pair encoding.
 def replace(new_inverse_vocab, lines):
     new_lines = []
@@ -96,3 +104,4 @@ if __name__ == '__main__':
 
     # TODO: Save the english and french text, in separate files.
     save_words(new_english_lines, new_french_lines, eng_filename, frn_filename)
+    create_joint_file(new_english_lines, new_french_lines)

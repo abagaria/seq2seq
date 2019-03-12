@@ -10,15 +10,19 @@ class Vocab(object):
     STOP_TOKEN = "<EOS>"
     PAD_TOKEN = "<PAD>"
 
-    def __init__(self, input_file):
-        self.input_file = input_file
+    def __init__(self, input_file_1, input_file_2):
+        self.input_file_1 = input_file_1
+        self.input_file_2 = input_file_2
         self.training_data = self._get_training_data()
         self.vocab, self.reverse_vocab = self._create_vocab()
         self._save_vocab()
 
     def _get_training_data(self):
         train_data = []
-        with open(self.input_file) as _file:
+        with open(self.input_file_1) as _file:
+            for line in _file:
+                train_data.append(line)
+        with open(self.input_file_2) as _file:
             for line in _file:
                 train_data.append(line)
         return train_data
@@ -49,8 +53,8 @@ class Vocab(object):
         return vocab, reverse_vocab
 
     def _save_vocab(self):
-        vocab_filename = "data/english_vocab.pkl"
-        rev_vocab_filename = "data/english_reverse_vocab.pkl"
+        vocab_filename = "data/bpe_vocab.pkl"
+        rev_vocab_filename = "data/bpe_reverse_vocab.pkl"
         with open(vocab_filename, "wb") as vf:
             pickle.dump(self.vocab, vf)
         with open(rev_vocab_filename, "wb") as ivf:
@@ -58,5 +62,6 @@ class Vocab(object):
 
 
 if __name__ == "__main__":
-    in_file = "data/english.txt"
-    v = Vocab(in_file)
+    in_file_1 = "data/english-bpe.txt"
+    in_file_2 = "data/french-bpe.txt"
+    v = Vocab(in_file_1, in_file_2)

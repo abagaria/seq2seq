@@ -1,0 +1,9 @@
+This folder implements Neural MT (French -> English) with Byte-Pair Encoding
+
+To generate the byte-pair encoded data, run the script `preprocess_bpe.py` with path to the corpus. 
+
+This will create one file each for the 2 languages in the MT task (which are byte pair encoded).
+
+After that, you may run `main.py` with `--version=bpe` which will subsequently create a joint vocab and train a seq2seq model on it. 
+
+

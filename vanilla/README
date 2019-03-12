@@ -1,0 +1,5 @@
+This folder contains an implementation of a vanilla seq2seq model that performs machine translation. 
+
+To run this model, make sure that there exists 1 file each corresponding to the data from both languages (refer to `preprocess_vanilla.py`)
+
+Then simply run `main.py` with `--version=vanilla`. 

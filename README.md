@@ -10,7 +10,7 @@ This repository contains a Deep Bi-directional encoder-decoder RNN that performs
   - NUMBER OF RNN LAYERS = 2
   - BIDIRECTIONALITY = TRUE
   - LEARNING_RATE = 2E-3
-  - NUM_EPOCHS = 2
+  - NUM_EPOCHS = 1
  - The above hyperparameters were used since they yielded the highest accuracy on the validation data while not taking too long to train on 1070 GPU.
  
  ### Byte-pair encoding model
@@ -25,12 +25,12 @@ This repository contains a Deep Bi-directional encoder-decoder RNN that performs
     - BIDIRECTIONALITY = TRUE
     - RNN_LAYERS = 1
     - LR = 2E-3
-    - RNN_SIZE = 200
-    - EMBEDDING_SIZE = 500
+    - RNN_SIZE = 100
+    - EMBEDDING_SIZE = 200
  
- - Final validation accuracy with BPE model: 54.4%
- - Final validation perplexity with BPE model: 9.78
+ - Final validation accuracy with BPE model: 51.2%
+ - Final validation perplexity with BPE model: 10.27
  
-Note on training time: the BPE model takes significantly longer to train than the vanilla model. This is because under the BPE model, the vocabulary size is significantly larger which increases the size of the final decoder RNN and hidden layer. Furthermore, computing a naive softmax over the entire augmented joint vocabulary (instead of a hierarchical softmax or beam search) proves to be computationally expensive and cumbersome. 
+Note on training time: the BPE model takes significantly longer to train (50 mins) than the vanilla model (15 mins). This is because under the BPE model, the vocabulary size is significantly larger which increases the size of the final decoder RNN and hidden layer. Furthermore, computing a naive softmax over the entire augmented joint vocabulary (instead of a hierarchical softmax or beam search) proves to be computationally expensive and cumbersome. 
 
 

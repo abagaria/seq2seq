@@ -3,6 +3,7 @@ import re
 from collections import defaultdict
 from bpe_procedure import bpe
 import pdb
+import pickle
 
 
 def read_from_corpus(corpus_file):
@@ -34,7 +35,7 @@ def read_from_corpus(corpus_file):
     return eng_lines, frn_lines
 
 
-def count_vocabs(eng_lines, frn_lines):
+def count_vocabs(eng_lines, frn_lines, german_lines):
     vocab = defaultdict(lambda: 0)
     inverse_vocab = defaultdict(lambda: "")
 
@@ -48,6 +49,11 @@ def count_vocabs(eng_lines, frn_lines):
             spaced_french_word = " ".join(frn_word) + "</w>"
             vocab[spaced_french_word] += 1
             inverse_vocab[frn_word] = spaced_french_word
+    for german_line in german_lines:
+        for german_word in german_line:
+            spaced_german_word = " ".join(german_word) + "</w>"
+            vocab[spaced_german_word] += 1
+            inverse_vocab[german_word] = spaced_german_word
 
     return vocab, inverse_vocab
 
@@ -80,11 +86,20 @@ def replace(new_inverse_vocab, lines):
                 new_line.append(new_inverse_vocab[word])
             else:
                 new_line.append(word)
-            new_lines.append(new_line)
+        new_lines.append(new_line)
     return new_lines
 
 
-if __name__ == '__main__':
+def attach_target_token(input_lines, target_token="<2e>"):
+    new_lines = []
+    for line in input_lines:
+        assert isinstance(line, list)
+        new_line = [target_token] + line
+        new_lines.append(new_line)
+    return new_lines
+
+
+def main():
     corpus_file = sys.argv[1]
     eng_filename = sys.argv[2]
     frn_filename = sys.argv[3]
@@ -105,3 +120,71 @@ if __name__ == '__main__':
     # TODO: Save the english and french text, in separate files.
     save_words(new_english_lines, new_french_lines, eng_filename, frn_filename)
     create_joint_file(new_english_lines, new_french_lines)
+
+
+if __name__ == '__main__':
+    f2e_corpus = sys.argv[1]
+    g2e_corpus = sys.argv[2]
+    f2e_out_name = sys.argv[3]
+    g2e_out_name = sys.argv[4]
+    fg2e_out_name = sys.argv[5]
+
+    f2e_eng_lines, f2e_frn_lines = read_from_corpus(f2e_corpus)
+    g2e_eng_lines, g2e_gmn_lines = read_from_corpus(g2e_corpus)
+
+    combined_eng_lines = f2e_eng_lines + g2e_eng_lines
+
+    # TODO: Create a dictionary of words from both corpuses.
+    count_vocab, inverse_vocab = count_vocabs(combined_eng_lines, f2e_frn_lines, g2e_gmn_lines)
+
+    # TODO: Run your byte pair encoding function on the dictionary.
+    new_count_vocab, new_inverse_vocab = bpe(count_vocab, inverse_vocab, num_merges=15000)
+
+    # TODO: Generate new english, french and german lines to contain
+    #       the byte-pair encoded words.
+    new_f2e_eng_lines = replace(new_inverse_vocab, f2e_eng_lines)
+    new_g2e_eng_lines = replace(new_inverse_vocab, g2e_eng_lines)
+    new_f2e_frn_lines = replace(new_inverse_vocab, f2e_frn_lines)
+    new_g2e_grm_lines = replace(new_inverse_vocab, g2e_gmn_lines)
+
+    # TODO: For each of the new lines, append the necessary target
+    #       language tokens. Also, shuffle the lines (make sure the
+    #       shuffling scheme for the french lines is the same as
+    #       the corresponding english lines - same for the german
+    #       lines.)
+    new_french_lines = attach_target_token(new_f2e_frn_lines)
+    new_german_lines = attach_target_token(new_g2e_grm_lines)
+
+    # TODO: Save three separate files. The first should contain
+    #       french sentences along with the corresponding english.
+    #       The second should contain german sentences along with the
+    #       corresponding english. The third should contain both,
+    #       alternating french and german sentences along with
+    #       the corresponding english.
+    with open(f2e_out_name, "w+") as f:
+        for french_line, english_line in zip(new_french_lines, new_f2e_eng_lines):
+            french_str = " ".join(french_line)
+            english_str = " ".join(english_line)
+            line = french_str + "\t" + english_str + "\n"
+            f.write(line)
+
+    with open(g2e_out_name, "w+") as f:
+        for german_line, english_line in zip(new_german_lines, new_g2e_eng_lines):
+            german_str = " ".join(german_line)
+            english_str = " ".join(english_line)
+            line = german_str + "\t" + english_str + "\n"
+            f.write(line)
+
+    with open(fg2e_out_name, "w+") as f:
+        for f_line, g_line, ef_line, eg_line in zip(new_french_lines, new_german_lines, new_f2e_eng_lines, new_g2e_eng_lines):
+            f_str = " ".join(f_line)
+            g_str = " ".join(g_line)
+            ef_str = " ".join(ef_line)
+            eg_str = " ".join(eg_line)
+
+            f2e_line = f_str + "\t" + ef_str + "\n"
+            g2e_line = g_str + "\t" + eg_str + "\n"
+
+            f.write(f2e_line)
+            f.write(g2e_line)
+

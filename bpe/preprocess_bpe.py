@@ -4,6 +4,7 @@ from collections import defaultdict
 from bpe_procedure import bpe
 import pdb
 import pickle
+import os
 
 
 def read_from_corpus(corpus_file):
@@ -187,4 +188,27 @@ if __name__ == '__main__':
 
             f.write(f2e_line)
             f.write(g2e_line)
+
+    with open(fg2e_out_name, "r") as f:
+        input_lines = []
+        output_lines = []
+        for line in f:
+            input_language = line.split("\t")[0]
+            output_language = line.split("\t")[1][:-1]  # remove the new line char
+            input_lines.append(input_language)
+            output_lines.append(output_language)
+
+    if not os.path.exists("data"):
+        try:
+            os.makedirs("data")
+        except OSError as e:
+            print("Unable to create {}".format("data"))
+
+    with open("data/combined-input-lines.txt", "w+") as f:
+        for line in input_lines:
+            f.write(line + "\n")
+
+    with open("data/combined-output-lines.txt", "w+") as f:
+        for line in output_lines:
+            f.write(line + "\n")
 

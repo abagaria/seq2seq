@@ -18,14 +18,17 @@ To prevent the loss from falling too quickly, I want to try SGD optimizer in the
 
 ## French -> English Translation
 Validation perplexity = 18.74
+
 Validation accuracy = 44.5%
 
 ## German -> English Translation
 Validation perplexity = 18.89
+
 Validation accuracy = 43.8%
 
 ## French + German -> English Translation:
 Validation perplexity = 15.29
+
 Validation accuracy = 46.5%
 
 I get a slight improvement over the vanilla seq2seq model (~42%) but the accuracy isn't close to what I got with the BPE model on French -> English in the previous assignment (~53%).

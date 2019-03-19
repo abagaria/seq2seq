@@ -3,9 +3,8 @@
 # project 3
 # open-vocab
 
-eng_filename=$1
-frn_filename=$2
-stdout_file=$3
+dataset_file=$1
+stdout_file=$2
 
 #
 #   We will be running this script to grade your assignment. Note that failure
@@ -17,9 +16,7 @@ stdout_file=$3
 # to the TAs.
 ##############################################################################
 
-python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --corpus_file="data/multi-combined.txt"
-python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --corpus_file="data/multi-f2e.txt"
-python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --corpus_file="data/multi-g2e.txt"
+python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --corpus_file=$dataset_file | tee $stdout_file
 
 ##############################################################################
 # Run this script with the command

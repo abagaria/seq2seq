@@ -2,7 +2,7 @@
 import pickle
 import argparse
 import pdb
-from tqdm import tqdm
+# from tqdm import tqdm
 import numpy as np
 
 # PyTorch imports.
@@ -36,8 +36,7 @@ def train(input_sentences, output_sentences, vocab, reverse_vocab, hy, writer):
     model.train()
 
     for epoch in range(1, hy.num_epochs + 1):
-        for encoder_input, encoder_len, decoder_input, decoder_input_len, decoder_output, decoder_output_len in \
-                tqdm(loader, desc="{}/{}".format(epoch, hy.num_epochs)):
+        for encoder_input, encoder_len, decoder_input, decoder_input_len, decoder_output, decoder_output_len in loader:
 
             # Move the data to the GPU
             encoder_input = encoder_input.to(device)
@@ -55,7 +54,9 @@ def train(input_sentences, output_sentences, vocab, reverse_vocab, hy, writer):
             loss.backward()
             optimizer.step()
 
-            writer.add_scalar("TrainingLoss", loss.item(), n_iterations)
+            if writer is not None:
+                writer.add_scalar("TrainingLoss", loss.item(), n_iterations)
+                
             n_iterations = n_iterations + 1
             loss_history.append(loss.item())
 
@@ -94,7 +95,9 @@ def compute_model_accuracy(model, loader, device, epoch, writer):
             num_total += output_length
 
     accuracy = (1. * num_correct) / float(num_total)
-    writer.add_scalar("training_accuracy", accuracy, epoch)
+
+    if writer is not None:
+        writer.add_scalar("training_accuracy", accuracy, epoch)
 
     model.train()
 

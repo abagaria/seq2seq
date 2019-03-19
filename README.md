@@ -1,36 +1,35 @@
 # seq2seq
 
 This repository contains a Deep Bi-directional encoder-decoder RNN that performs neural machine translation. The code is divided into 2 folders:
-### Vanilla Model
-- Ensure that you first create the data using `preprocess_vanilla.py`. After that, simply run `main.py` with `--version=vanilla`. 
-- Hyperparameters used in the vanilla model: 
-  - BATCH_SIZE = 32
-  - EMBEDDING_SIZE = 512
-  - RNN_SIZE = 256
-  - NUMBER OF RNN LAYERS = 2
-  - BIDIRECTIONALITY = TRUE
-  - LEARNING_RATE = 2E-3
-  - NUM_EPOCHS = 1
- - The above hyperparameters were used since they yielded the highest accuracy on the validation data while not taking too long to train on 1070 GPU.
- 
- ### Byte-pair encoding model
- This version of the code pre-processes the corpus based on byte-pair encoding and then proceeds to train a deep seq2seq model. 
- - Ensure that you first create the data using `preprocess_bpe.py`. After that, simply run `main.py` with `--version=bpe`. 
- - Advantages of using byte-pair encoding: 
-   - BPE allows us to improve translation for rarely seen words in our MT corpus. 
-   - Even though we do not expect to see a big difference in overall accuracy while using BPE over vanilla data preprocessing, we expect that by breaking words into commanly seen sub-words, we will be able to better predict rarely seen words as a composition of more frequently seen sub-words. 
-   - Hyperparameters used with the BPE model:
-    - BATCH_SIZE = 64
-    - NUM_EPOCHS = 1
-    - BIDIRECTIONALITY = TRUE
-    - RNN_LAYERS = 1
-    - LR = 2E-3
-    - RNN_SIZE = 100
-    - EMBEDDING_SIZE = 200
- 
- - Final validation accuracy with BPE model: 51.2%
- - Final validation perplexity with BPE model: 10.27
- 
-Note on training time: the BPE model takes significantly longer to train (50 mins) than the vanilla model (15 mins). This is because under the BPE model, the vocabulary size is significantly larger which increases the size of the final decoder RNN and hidden layer. Furthermore, computing a naive softmax over the entire augmented joint vocabulary (instead of a hierarchical softmax or beam search) proves to be computationally expensive and cumbersome. 
 
+## Hyperparameters
+I used the same hyperparameters for all my models
+--num_rnn_layers=1
+--bidirectional=True
+--batch_size=32 
+--epochs=1 
+--embedding_size=256 
+--rnn=512 
+--lr=1e-3
 
+I tried adding more layers to my RNN, but that didnt help much with accuracy.
+I reduced my learning rate from the one I used to train my vanilla seq2seq model. This is because the training loss was decreasing too quickly.
+To prevent the loss from falling too quickly, I want to try SGD optimizer in the future. 
+
+## French -> English Translation
+Validation perplexity = 18.74
+Validation accuracy = 44.5%
+
+## German -> English Translation
+Validation perplexity = 18.89
+Validation accuracy = 43.8%
+
+## French + German -> English Translation:
+Validation perplexity = 15.29
+Validation accuracy = 46.5%
+
+I get a slight improvement over the vanilla seq2seq model (~42%) but the accuracy isn't close to what I got with the BPE model on French -> English in the previous assignment (~53%).
+My hypothesis is that in this assignment our vocabulary size exploded - where we had a vocab size of ~10,000 with mono-lingual vocab translations, the combined word piece vocab when using all 3 languages is closer to 60,000.
+As a result of the much larger vocab size, the probability of incorrectly classifying a word should go up. 
+
+We get a 2% bump in classification accuracy when training on data which goes from French AND German to English. This suggests that training on 2 input languages perhaps has a regularizing impact on the language model for english. Since we get examples for a French sentence and a German sentence that correspond to the same english translation, we get a regularizing effect while learning a language model over that english sentence.

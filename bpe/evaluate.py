@@ -78,6 +78,7 @@ def compute_model_accuracy(model, loader, vocab, device, epoch, writer):
     accuracy = (1. * num_correct) / float(num_total)
     perplexity = np.exp(np.mean(loss_history))
 
-    writer.add_scalar("validation_accuracy", accuracy, epoch)
+    if writer is not None:
+        writer.add_scalar("validation_accuracy", accuracy, epoch)
 
     return accuracy, perplexity

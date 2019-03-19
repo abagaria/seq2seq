@@ -8,7 +8,7 @@ import os
 # Other imports.
 from utils import create_data_splits, get_lines
 
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 from hyperparameters import Hyperparameters
 
 
@@ -139,7 +139,9 @@ if __name__ == '__main__':
     if not os.path.exists(_french_file):
         raise ValueError("{} does not exist, call preprocess on the corpus before".format(_english_file))
 
-    writer = SummaryWriter()
+    # writer = SummaryWriter()
+    writer = None
+    
     hyperparameters = Hyperparameters(args)
 
     main()

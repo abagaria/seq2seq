@@ -28,6 +28,8 @@ class Seq2Seq(nn.Module):
         self.encoder = EncoderRNN(embedding_size, hidden_size, rnn_layers, bidirectional, device, dataset)
         self.decoder = DecoderRNN(vocab_size, embedding_size, hidden_size, rnn_layers, bidirectional, device, dataset)
 
+        self.to(device)
+
     def forward(self, encoder_tokens, decoder_tokens, encoder_seq_lens, decoder_seq_lens):
         encoder_embeds = self.embedding(encoder_tokens)
         encoder_hidden = self.encoder(encoder_embeds, encoder_seq_lens)

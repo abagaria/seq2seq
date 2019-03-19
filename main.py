@@ -12,6 +12,31 @@ from tensorboardX import SummaryWriter
 from hyperparameters import Hyperparameters
 
 
+def create_input_output_files(combined_file):
+    input_file_name = combined_file.split(".")[0] + "-input-lines.txt"
+    output_file_name = combined_file.split(".")[0] + "-output-lines.txt"
+    print("Creating {} and {}".format(input_file_name, output_file_name))
+
+    with open(combined_file, "r") as _file:
+        input_lines = []
+        output_lines = []
+        for _line in _file:
+            input_language = _line.split("\t")[0]
+            output_language = _line.split("\t")[1][:-1]
+            input_lines.append(input_language)
+            output_lines.append(output_language)
+    
+    with open(input_file_name, "w+") as _file:
+        for _line in input_lines:
+            _file.write(_line + "\n")
+    
+    with open(output_file_name, "w+") as _file:
+        for _line in output_lines:
+            _file.write(_line + "\n")
+
+    return input_file_name, output_file_name
+
+
 def create_directory(dir_path):
     if not os.path.exists(dir_path):
         try:
@@ -59,10 +84,10 @@ def load_vocab(french_file, english_file, version):
 def main():
     create_directory("{}/saved_runs".format(args.version))
     
-    french = get_lines(args.french_file)
-    english = get_lines(args.english_file)
+    french = get_lines(_french_file)
+    english = get_lines(_english_file)
 
-    create_vocab(args.french_file, args.english_file, args.version)
+    create_vocab(_french_file, _english_file, args.version)
 
     french_english_pairs = list(zip(french, english))
     training_pairs, validation_pairs = create_data_splits(french_english_pairs)
@@ -76,7 +101,7 @@ def main():
         from bpe.train import train
         from bpe.evaluate import evaluate
 
-        v, rv = load_vocab(args.french_file, args.english_file, args.version)
+        v, rv = load_vocab(_french_file, _english_file, args.version)
         training_perplexity = train(training_input_sentences, training_output_sentences, v, rv, hyperparameters, writer)
         print("training perplexity = {}".format(training_perplexity))
         evaluate(validation_input_sentences, validation_output_sentences, v, rv, hyperparameters, writer)
@@ -85,7 +110,7 @@ def main():
         from vanilla.train import train
         from vanilla.evaluate import evaluate
 
-        fv, frv, ev, erv = load_vocab(args.french_file, args.english_file, args.version)
+        fv, frv, ev, erv = load_vocab(_french_file, _english_file, args.version)
         training_perplexity = train(training_input_sentences, training_output_sentences, fv, ev, frv, erv, hyperparameters, writer)
         print("training perplexity = {}".format(training_perplexity))
         evaluate(validation_input_sentences, validation_output_sentences, fv, ev, frv, erv, hyperparameters, writer)
@@ -94,8 +119,7 @@ def main():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="vanilla/bpe")
-    parser.add_argument("--english_file", help="path to english file")
-    parser.add_argument("--french_file", help="path to french file")
+    parser.add_argument("--corpus_file", type=str, help="data file", default="data/multi-combined-input-lines.txt")
     parser.add_argument("--batch_size", type=int, help="batch size", default=1)
     parser.add_argument("--epochs", type=int, help="number of training epochs", default=10)
     parser.add_argument("--embedding_size", type=int, help="embedding size", default=500)
@@ -108,10 +132,12 @@ if __name__ == '__main__':
     if not args.version in ["vanilla", "bpe"]:
         raise ValueError("{} should be vanilla or bpe".format(args.version))
 
-    if not os.path.exists(args.english_file):
-        raise ValueError("{} does not exist, call preprocess on the corpus before".format(args.english_file))
-    if not os.path.exists(args.french_file):
-        raise ValueError("{} does not exist, call preprocess on the corpus before".format(args.english_file))
+    _french_file, _english_file = create_input_output_files(args.corpus_file)
+
+    if not os.path.exists(_english_file):
+        raise ValueError("{} does not exist, call preprocess on the corpus before".format(_english_file))
+    if not os.path.exists(_french_file):
+        raise ValueError("{} does not exist, call preprocess on the corpus before".format(_english_file))
 
     writer = SummaryWriter()
     hyperparameters = Hyperparameters(args)

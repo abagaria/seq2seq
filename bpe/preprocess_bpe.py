@@ -77,29 +77,6 @@ def create_joint_file(new_english_lines, new_french_lines):
             f.write(' '.join(line) + '\n')
 
 
-def create_input_output_files(combined_file):
-    input_file_name = combined_file.split(".")[0] + "-input-lines.txt"
-    output_file_name = combined_file.split(".")[0] + "-output-lines.txt"
-    print("Creating {} and {}".format(input_file_name, output_file_name))
-
-    with open(combined_file, "r") as _file:
-        input_lines = []
-        output_lines = []
-        for _line in _file:
-            input_language = _line.split("\t")[0]
-            output_language = _line.split("\t")[1][:-1]
-            input_lines.append(input_language)
-            output_lines.append(output_language)
-    
-    with open(input_file_name, "w+") as _file:
-        for _line in input_lines:
-            _file.write(_line + "\n")
-    
-    with open(output_file_name, "w+") as _file:
-        for _line in output_lines:
-            _file.write(_line + "\n")
-
-
 # TODO: Implement byte pair encoding.
 def replace(new_inverse_vocab, lines):
     new_lines = []
@@ -212,6 +189,6 @@ if __name__ == '__main__':
             f.write(f2e_line)
             f.write(g2e_line)
 
-    create_input_output_files(f2e_out_name)
-    create_input_output_files(g2e_out_name)
-    create_input_output_files(fg2e_out_name)
+    # create_input_output_files(f2e_out_name)
+    # create_input_output_files(g2e_out_name)
+    # create_input_output_files(fg2e_out_name)

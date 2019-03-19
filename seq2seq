@@ -17,9 +17,9 @@ stdout_file=$3
 # to the TAs.
 ##############################################################################
 
-python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --french_file="data/multi-combined-input-lines.txt" --english_file="data/multi-combined-output-lines.txt" 
-python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --french_file="data/multi-f2e-input-lines.txt" --english_file="data/multi-f2e-output-lines.txt" 
-python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --french_file="data/multi-g2e-input-lines.txt" --english_file="data/multi-g2e-output-lines.txt" 
+python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --corpus_file="data/multi-combined.txt"
+python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --corpus_file="data/multi-f2e.txt"
+python main.py --num_rnn_layers=1 --bidirectional=True --batch_size=32 --epochs=1 --embedding_size=256 --hidden_size=512 --lr=1e-3 --version="bpe" --corpus_file="data/multi-g2e.txt"
 
 ##############################################################################
 # Run this script with the command

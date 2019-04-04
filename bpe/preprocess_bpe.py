@@ -126,9 +126,9 @@ def main():
 if __name__ == '__main__':
     f2e_corpus = sys.argv[1]
     g2e_corpus = sys.argv[2]
-    f2e_out_name = sys.argv[3]
-    g2e_out_name = sys.argv[4]
-    fg2e_out_name = sys.argv[5]
+    e2f_out_name = sys.argv[3]
+    e2g_out_name = sys.argv[4]
+    e2fg_out_name = sys.argv[5]
 
     f2e_eng_lines, f2e_frn_lines = read_from_corpus(f2e_corpus)
     g2e_eng_lines, g2e_gmn_lines = read_from_corpus(g2e_corpus)
@@ -153,8 +153,8 @@ if __name__ == '__main__':
     #       shuffling scheme for the french lines is the same as
     #       the corresponding english lines - same for the german
     #       lines.)
-    new_french_lines = attach_target_token(new_f2e_frn_lines)
-    new_german_lines = attach_target_token(new_g2e_grm_lines)
+    new_f2e_eng_lines_2 = attach_target_token(new_f2e_eng_lines, target_token="<2f>")
+    new_g2e_eng_lines_2 = attach_target_token(new_g2e_eng_lines, target_token="<2g>")
 
     # TODO: Save three separate files. The first should contain
     #       french sentences along with the corresponding english.
@@ -162,29 +162,29 @@ if __name__ == '__main__':
     #       corresponding english. The third should contain both,
     #       alternating french and german sentences along with
     #       the corresponding english.
-    with open(f2e_out_name, "w+") as f:
-        for french_line, english_line in zip(new_french_lines, new_f2e_eng_lines):
+    with open(e2f_out_name, "w+") as f:
+        for english_line, french_line in zip(new_f2e_eng_lines_2, new_f2e_frn_lines):
             french_str = " ".join(french_line)
             english_str = " ".join(english_line)
-            line = french_str + "\t" + english_str + "\n"
+            line = english_str + "\t" + french_str + "\n"
             f.write(line)
 
-    with open(g2e_out_name, "w+") as f:
-        for german_line, english_line in zip(new_german_lines, new_g2e_eng_lines):
+    with open(e2g_out_name, "w+") as f:
+        for german_line, english_line in zip(new_g2e_eng_lines_2, new_g2e_grm_lines):
             german_str = " ".join(german_line)
             english_str = " ".join(english_line)
             line = german_str + "\t" + english_str + "\n"
             f.write(line)
 
-    with open(fg2e_out_name, "w+") as f:
-        for f_line, g_line, ef_line, eg_line in zip(new_french_lines, new_german_lines, new_f2e_eng_lines, new_g2e_eng_lines):
+    with open(e2fg_out_name, "w+") as f:
+        for f_line, g_line, ef_line, eg_line in zip(new_f2e_eng_lines_2, new_g2e_eng_lines_2, new_f2e_frn_lines, new_g2e_grm_lines):
             f_str = " ".join(f_line)
             g_str = " ".join(g_line)
             ef_str = " ".join(ef_line)
             eg_str = " ".join(eg_line)
 
-            f2e_line = f_str + "\t" + ef_str + "\n"
-            g2e_line = g_str + "\t" + eg_str + "\n"
+            f2e_line = ef_str + "\t" + f_str + "\n"
+            g2e_line = eg_str + "\t" + g_str + "\n"
 
             f.write(f2e_line)
             f.write(g2e_line)

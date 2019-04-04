@@ -55,7 +55,7 @@ def create_vocab(french_file, english_file, version):
         Vocab(french_file, english_file)
 
 
-def load_vocab(french_file, english_file, version):
+def load_vocab(input_file, output_file, version):
     if version == "bpe":
         with open("data/bpe_vocab.pkl", "rb") as f:
             v = pickle.load(f)
@@ -64,33 +64,33 @@ def load_vocab(french_file, english_file, version):
         return v, rv
 
     # Vanilla
-    path_to_english_vocab = english_file.split(".")[0] + "_vocab.pkl"
-    path_to_french_vocab  = french_file.split(".")[0] + "_vocab.pkl"
-    path_to_english_reverse = english_file.split(".")[0] + "_reverse_vocab.pkl"
-    path_to_french_reverse = french_file.split(".")[0] + "_reverse_vocab.pkl"
+    path_to_output_vocab = output_file.split(".")[0] + "_vocab.pkl"
+    path_to_input_vocab = input_file.split(".")[0] + "_vocab.pkl"
+    path_to_output_inverse = output_file.split(".")[0] + "_reverse_vocab.pkl"
+    path_to_input_inverse = input_file.split(".")[0] + "_reverse_vocab.pkl"
 
-    with open(path_to_french_vocab, "rb") as f:
-        fv = pickle.load(f)
-    with open(path_to_french_reverse, "rb") as f:
-        frv = pickle.load(f)
-    with open(path_to_english_vocab, "rb") as f:
-        ev = pickle.load(f)
-    with open(path_to_english_reverse, "rb") as f:
-        erv = pickle.load(f)
+    with open(path_to_input_vocab, "rb") as f:
+        iv = pickle.load(f)
+    with open(path_to_input_inverse, "rb") as f:
+        irv = pickle.load(f)
+    with open(path_to_output_vocab, "rb") as f:
+        ov = pickle.load(f)
+    with open(path_to_output_inverse, "rb") as f:
+        orv = pickle.load(f)
 
-    return fv, frv, ev, erv
+    return iv, irv, ov, orv
 
 
 def main():
     create_directory("{}/saved_runs".format(args.version))
     
-    french = get_lines(_french_file)
-    english = get_lines(_english_file)
+    input_lines = get_lines(_input_file)
+    output_lines = get_lines(_output_file)
 
-    create_vocab(_french_file, _english_file, args.version)
+    create_vocab(_input_file, _output_file, args.version)
 
-    french_english_pairs = list(zip(french, english))
-    training_pairs, validation_pairs = create_data_splits(french_english_pairs)
+    input_output_pairs = list(zip(input_lines, output_lines))
+    training_pairs, validation_pairs = create_data_splits(input_output_pairs)
 
     training_input_sentences = [pair[0] for pair in training_pairs]
     training_output_sentences = [pair[1] for pair in training_pairs]
@@ -101,7 +101,7 @@ def main():
         from bpe.train import train
         from bpe.evaluate import evaluate
 
-        v, rv = load_vocab(_french_file, _english_file, args.version)
+        v, rv = load_vocab(_input_file, _output_file, args.version)
         training_perplexity = train(training_input_sentences, training_output_sentences, v, rv, hyperparameters, writer)
         print("training perplexity = {}".format(training_perplexity))
         evaluate(validation_input_sentences, validation_output_sentences, v, rv, hyperparameters, writer)
@@ -110,10 +110,10 @@ def main():
         from vanilla.train import train
         from vanilla.evaluate import evaluate
 
-        fv, frv, ev, erv = load_vocab(_french_file, _english_file, args.version)
-        training_perplexity = train(training_input_sentences, training_output_sentences, fv, ev, frv, erv, hyperparameters, writer)
+        iv, irv, ov, orv = load_vocab(_input_file, _output_file, args.version)
+        training_perplexity = train(training_input_sentences, training_output_sentences, iv, ov, irv, orv, hyperparameters, writer)
         print("training perplexity = {}".format(training_perplexity))
-        evaluate(validation_input_sentences, validation_output_sentences, fv, ev, frv, erv, hyperparameters, writer)
+        evaluate(validation_input_sentences, validation_output_sentences, iv, ov, irv, orv, hyperparameters, writer)
 
 
 if __name__ == '__main__':
@@ -132,12 +132,12 @@ if __name__ == '__main__':
     if not args.version in ["vanilla", "bpe"]:
         raise ValueError("{} should be vanilla or bpe".format(args.version))
 
-    _french_file, _english_file = create_input_output_files(args.corpus_file)
+    _input_file, _output_file = create_input_output_files(args.corpus_file)
 
-    if not os.path.exists(_english_file):
-        raise ValueError("{} does not exist, call preprocess on the corpus before".format(_english_file))
-    if not os.path.exists(_french_file):
-        raise ValueError("{} does not exist, call preprocess on the corpus before".format(_english_file))
+    if not os.path.exists(_output_file):
+        raise ValueError("{} does not exist, call preprocess on the corpus before".format(_output_file))
+    if not os.path.exists(_input_file):
+        raise ValueError("{} does not exist, call preprocess on the corpus before".format(_output_file))
 
     # writer = SummaryWriter()
     writer = None

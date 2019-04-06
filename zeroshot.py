@@ -12,10 +12,10 @@ from utils import create_data_splits, get_lines
 from hyperparameters import Hyperparameters
 
 
-def split(file, flip):
+def split(input_file, flip):
     input_lines = []
     output_lines = []
-    with open(file, "r") as f:
+    with open(input_file, "r") as f:
         for line in f:
             if not flip:
                 input_line = line.split("\t")[0]

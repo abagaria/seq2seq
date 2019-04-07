@@ -1,0 +1,28 @@
+#!/bin/bash
+ 
+ # project 5
+ # zeroshot
+ 
+ e2g_train=$1
+ e2f_train=$2
+ e2g_test=$3
+ e2f_test=$4
+ stdout_file=$5
+ 
+ #
+ #   We will be running this script to grade your assignment. Note that failure
+ # to run this program with this script will result in a 15% deduction in your
+ # grade, regardless of if you provide other instructions on how to run your
+ # program.
+ #
+ #   If you are having difficulty getting the script to run your program, talk
+ # to the TAs.
+ ##############################################################################
+ 
+ # python zeroshot.py $e2g_train $e2f_train $e2g_test $e2f_test | tee $stdout_file
+ python zeroshot.py --e2g_train_file=$e2g_train --e2f_train_file=$e2f_train --e2g_test_file=$e2g_test --e2f_test_file=$e2f_test --batch_size=32 --embedding_size=64 --hidden_size=64 --bidirectional=True --epochs=1 | tee $stdout_file
+ 
+ ##############################################################################
+ # Run this script with the command
+ #
+ #   ./seq2seq dattrainED.txt dattrainEF.txt dattestED.txt dattestEF.txt out.txt

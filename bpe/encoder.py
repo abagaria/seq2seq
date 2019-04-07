@@ -25,7 +25,10 @@ class EncoderRNN(nn.Module):
         self.to(device)
 
     def forward(self, embedded_tokens, seq_lens):
-        packed_input = pack_padded_sequence(embedded_tokens, seq_lens, batch_first=True)
+        try:
+            packed_input = pack_padded_sequence(embedded_tokens, seq_lens, batch_first=True)
+        except:
+            pdb.set_trace()
         _, hidden = self.rnn_encoder(packed_input)
 
         return hidden

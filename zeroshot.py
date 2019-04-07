@@ -99,7 +99,7 @@ def load_vocab():
 
 
 def main():
-    create_directory("saved_runs")
+    create_directory("bpe/saved_runs")
 
     input_lines = get_lines(_input_file)
     output_lines = get_lines(_output_file)

@@ -1,7 +1,7 @@
 import pdb
 import re
 from collections import defaultdict
-from tqdm import tqdm
+# from tqdm import tqdm
 
 
 def get_stats(vocab):
@@ -29,7 +29,7 @@ def merge_vocab(pair, v_in, v_in_inverse):
 
 def bpe(vocab, inverse_vocab, num_merges=10):
     print("Original vocab size = ", len(vocab))
-    for i in tqdm(range(num_merges)):
+    for i in range(num_merges):
         pairs = get_stats(vocab)
         best = max(pairs, key=pairs.get)
         vocab, inverse_vocab = merge_vocab(best, vocab, inverse_vocab)

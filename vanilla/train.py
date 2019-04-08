@@ -2,7 +2,7 @@
 import pickle
 import argparse
 import pdb
-from tqdm import tqdm
+# from tqdm import tqdm
 import numpy as np
 
 # PyTorch imports.
@@ -41,8 +41,7 @@ def train(input_sentences, output_sentences, input_vocab, output_vocab, input_re
     decoder.train()
 
     for epoch in range(1, hy.num_epochs + 1):
-        for encoder_input, encoder_len, decoder_input, decoder_input_len, decoder_output, decoder_output_len in \
-                tqdm(loader, desc="{}/{}".format(epoch, hy.num_epochs)):
+        for encoder_input, encoder_len, decoder_input, decoder_input_len, decoder_output, decoder_output_len in loader:
 
             # Move the data to the GPU
             encoder_input = encoder_input.to(device)

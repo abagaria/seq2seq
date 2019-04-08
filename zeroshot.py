@@ -65,16 +65,29 @@ def create_input_output_file(e2g_train_file, e2f_train_file):
 
 def prepare_test_file(e2g_test_file, e2f_test_file):
     g_lines, f_lines = [], []
-    out_file = e2f_test_file.split(".")[0] + e2f_test_file.split("/")[-1]
+    out_file = e2f_test_file.split(".")[0] + e2g_test_file.split("/")[-1]
     with open(e2g_test_file, "r") as e2gf:
         with open(e2f_test_file, "r") as e2ff:
             for e2g, e2f in zip(e2gf, e2ff):
                 g_lines.append(e2g.split("\t")[1][:-1])
                 f_lines.append(e2f.split("\t")[1][:-1])
+    g_lines = attach_target_token(g_lines, "<2f>")
     with open(out_file, "w+") as f:
         for g, fl in zip(g_lines, f_lines):
             f.write(g + "\t" + fl + "\n")
     return g_lines, f_lines
+
+
+def unk_test_lines(lines, vocab):
+    new_lines = []
+    for line in lines:
+        new_line = ""
+        for word in line.split():
+            if word in vocab:
+                new_line = new_line + " " + word
+        new_lines.append(new_line)
+    return new_lines
+
 
 
 def create_directory(dir_path):
@@ -118,6 +131,8 @@ def main():
     v, rv = load_vocab()
     training_perplexity = train(training_input_sentences, training_output_sentences, v, rv, hyperparameters, writer)
     print("training perplexity = {}".format(training_perplexity))
+    validation_input_sentences = unk_test_lines(validation_input_sentences, v)
+    validation_output_sentences = unk_test_lines(validation_output_sentences, v)
     evaluate(validation_input_sentences, validation_output_sentences, v, rv, hyperparameters, writer)
 
 

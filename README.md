@@ -8,7 +8,7 @@ I used the same hyperparameters for all my models
 --bidirectional=True
 --batch_size=32 
 --epochs=1 
---embedding_size=256 
+--embedding_size=512 
 --rnn=512 
 --lr=1e-3
 
@@ -16,23 +16,40 @@ I tried adding more layers to my RNN, but that didnt help much with accuracy.
 I reduced my learning rate from the one I used to train my vanilla seq2seq model. This is because the training loss was decreasing too quickly.
 To prevent the loss from falling too quickly, I want to try SGD optimizer in the future. 
 
-## French -> English Translation
-Validation perplexity = 18.74
+## English -> French Translation
+Validation perplexity = 21
 
-Validation accuracy = 44.5%
+Validation accuracy = 42.6%
 
-## German -> English Translation
-Validation perplexity = 18.89
+## English ->  German Translation
+Validation perplexity = 23.92
 
-Validation accuracy = 43.8%
+Validation accuracy = 41.9%
 
-## French + German -> English Translation:
-Validation perplexity = 15.29
+##  English -> French + German Translation:
+Validation perplexity = 25.65
 
-Validation accuracy = 46.5%
+Validation accuracy = 40.5%
 
-I get a slight improvement over the vanilla seq2seq model (~42%) but the accuracy isn't close to what I got with the BPE model on French -> English in the previous assignment (~53%).
-My hypothesis is that in this assignment our vocabulary size exploded - where we had a vocab size of ~10,000 with mono-lingual vocab translations, the combined word piece vocab when using all 3 languages is closer to 60,000.
-As a result of the much larger vocab size, the probability of incorrectly classifying a word should go up. 
+## German -> French Zeroshot Translation
+Validation perplexity = 92.35
 
-We get a 2% bump in classification accuracy when training on data which goes from French AND German to English. This suggests that training on 2 input languages perhaps has a regularizing impact on the language model for english. Since we get examples for a French sentence and a German sentence that correspond to the same english translation, we get a regularizing effect while learning a language model over that english sentence.
+Validation accuracy = 29.9%
+
+### One to many translation
+My accuracy for the one-many translation model was not better than the monolingual translation model as I had expected. It performs pretty much the same as the monolingual MT models.
+
+### Zero-shot translation reproduction
+I was able to emulate the zero-shot translation results from the paper. This was essentially because of the "implicit bridging" phenomenon described in the paper. By training on French -> English and English -> German and using the target token during translation, the model develops a strong prior on how to translate between French -> German
+
+### Data pre-processing verification
+- I wrote out the data being used at every stage of the pipeline to a text file and verified that it made sense
+- I also printed out the input to the model (decoded using a reverse vocabulary) to ensure that the data into and out of the model made sense.
+
+### Model and training verification
+- My guess as to why i dont get a high enough accuracy is that I have not implemented any form of attention
+- I have verified that the model is implemented correctly by going through it line by line
+- I visualized the loss function using tensorboard and made sure that it was decreasing
+- I tried a few different set of hyperparameters. I did not perform a grid search over them as I don't see any educational value in doing that. 
+- To improve accuracy numbers, I would experiment with implementing attention and doing a more extensive hyperparameter search
+
